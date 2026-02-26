@@ -1,0 +1,7 @@
+#!/bin/bash -e
+# Wait for Postgres when DB_HOST is set (Docker Compose)
+if [ -n "${DB_HOST}" ]; then
+  until pg_isready -h "${DB_HOST}" -p 5432 -U postgres; do sleep 2; done
+fi
+[ "${1}" = "./bin/rails" ] && [ "${2}" = "server" ] && ./bin/rails db:prepare
+exec "${@}"

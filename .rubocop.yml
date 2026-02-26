@@ -1,0 +1,189 @@
+# =============================================================================
+# RuboCop Configuration — Ruby on Rails Challenge Reference
+# =============================================================================
+# Use this as a starting point. You may adjust settings to fit your choices,
+# but the spirit of the rules (frozen literals, guard clauses, method length)
+# must be preserved.
+# =============================================================================
+
+# Plugins — install these gems in your Gemfile (development/test group):
+#   rubocop-performance
+#   rubocop-rails
+#   rubocop-rspec
+#   rubocop-factory_bot
+plugins:
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-factory_bot
+
+# =============================================================================
+# Global
+# =============================================================================
+AllCops:
+  TargetRubyVersion: 3.4
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'db/migrate/**/*'
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - 'log/**/*'
+    - 'coverage/**/*'
+    - 'node_modules/**/*'
+
+# =============================================================================
+# Layout & Style
+# =============================================================================
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - 'config/routes.rb'
+    - 'db/migrate/**/*'
+
+Layout/MultilineMethodCallIndentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+Style/GuardClause:
+  Enabled: true
+
+Style/Documentation:
+  Enabled: true
+
+Style/RedundantSelf:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
+# =============================================================================
+# Metrics
+# =============================================================================
+Metrics/MethodLength:
+  Max: 20
+  Exclude:
+    - 'db/migrate/**/*'
+    - 'spec/**/*'
+    - 'test/**/*'
+
+Metrics/ClassLength:
+  Max: 150
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+
+Metrics/BlockLength:
+  Max: 30
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+    - 'config/routes.rb'
+    - 'config/environments/**/*'
+    - 'Gemfile'
+
+Metrics/AbcSize:
+  Enabled: true
+  Max: 20
+
+Metrics/CyclomaticComplexity:
+  Enabled: true
+  Max: 8
+
+Metrics/PerceivedComplexity:
+  Enabled: true
+  Max: 10
+
+Metrics/ParameterLists:
+  Enabled: false
+
+# =============================================================================
+# Security, Lint, Naming — Always enabled
+# =============================================================================
+Lint:
+  Enabled: true
+
+Security:
+  Enabled: true
+
+Naming:
+  Enabled: true
+
+# =============================================================================
+# Rails
+# =============================================================================
+Rails:
+  Enabled: true
+
+Rails/UnknownEnv:
+  Environments:
+    - production
+    - development
+    - test
+    - staging
+
+Rails/SkipsModelValidations:
+  AllowedMethods:
+    - touch
+    - update_all
+    - update_attribute
+    - update_column
+    - update_columns
+
+Rails/CreateTableWithTimestamps:
+  Enabled: true
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: true
+
+# =============================================================================
+# Performance
+# =============================================================================
+Performance:
+  Enabled: true
+
+# =============================================================================
+# RSpec
+# =============================================================================
+RSpec:
+  Enabled: true
+  Include:
+    - 'spec/**/*'
+
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/MultipleExpectations:
+  Max: 10
+
+RSpec/NestedGroups:
+  Max: 5
+
+RSpec/DescribeClass:
+  Exclude:
+    - 'spec/requests/**/*'
+    - 'spec/system/**/*'
+    - 'spec/integration/**/*'
+
+RSpec/NamedSubject:
+  Enabled: true
+
+RSpec/InstanceVariable:
+  Enabled: true
+
+# =============================================================================
+# FactoryBot
+# =============================================================================
+FactoryBot:
+  Enabled: true
+
+FactoryBot/SyntaxMethods:
+  Enabled: false
