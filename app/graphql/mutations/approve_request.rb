@@ -8,7 +8,11 @@ module Mutations
     field :errors, [String], null: false
 
     def resolve(id:)
-      result = RequestManager::RequestApprover.call(account: current_account, user: current_user, id: id.to_i)
+      result = RequestManager::RequestApprover.call(
+        account: current_account,
+        user: current_user,
+        id: id.to_i
+      )
       result.success? ? { request: result.payload, errors: [] } : { request: nil, errors: [result.errors[:message]].compact }
     end
   end
