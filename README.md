@@ -2,6 +2,23 @@
 
 API de gerenciamento de solicitações em Ruby on Rails.
 
+## Setup local (sem Docker)
+
+Dentro da pasta do projeto:
+
+```bash
+bundle install
+bundle exec rake db:create
+bundle exec rake db:migrate
+bundle exec rails db:seed
+```
+
+Subir a aplicação:
+
+```bash
+bundle exec rails s -p 3000 -b 0.0.0.0
+```
+
 ## Rodar com Docker
 
 ```bash
