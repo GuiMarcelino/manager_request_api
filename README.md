@@ -111,4 +111,3 @@ O `RequestType` chama `load_association(object, :user)`, `load_association(objec
 
 - **Autenticação**: JWT ou similar
 - **Graphql** melhorar a estrutura adicionando classe authorization com regras para cada role:
-- **Schema introspection export**: gerar JSON do schema (como `octopus_core_printed_schema.json`) para documentação
