@@ -154,6 +154,80 @@ RSpec.describe 'GraphQL API', type: :request do
       end
     end
 
+    describe 'listComments query' do
+      let(:query) do
+        <<~GQL
+          query ListComments($filter: CommentFilter) {
+            listComments(filter: $filter) {
+              id
+              body
+              active
+              request { id title }
+              user { id name }
+            }
+          }
+        GQL
+      end
+
+      # rubocop:disable RSpec/MultipleMemoizedHelpers -- shared setup for listComments
+      context 'when account has comments' do
+        let!(:request) { create(:request, account: account, user: user, category: category) }
+        let!(:active_comment) do
+          create(:comment, account: account, request: request, user: user, body: 'Comentário ativo', active: true)
+        end
+        let!(:inactive_comment) do
+          create(:comment, account: account, request: request, user: user, body: 'Comentário inativo', active: false)
+        end
+
+        it 'returns all comments when active filter is not provided' do
+          graphql_request(query: query, variables: {})
+
+          expect(response).to have_http_status(:ok)
+          comments = response.parsed_body['data']['listComments']
+          expect(comments.pluck('id')).to contain_exactly(active_comment.id.to_s, inactive_comment.id.to_s)
+        end
+
+        it 'returns only active comments when filter active: true' do
+          graphql_request(query: query, variables: { filter: { active: true } })
+
+          expect(response).to have_http_status(:ok)
+          comments = response.parsed_body['data']['listComments']
+          expect(comments).to contain_exactly(
+            hash_including('id' => active_comment.id.to_s, 'body' => active_comment.body, 'active' => true)
+          )
+        end
+
+        it 'returns comments with request and user when filter active: true' do
+          graphql_request(query: query, variables: { filter: { active: true } })
+
+          expect(response).to have_http_status(:ok)
+          comment = response.parsed_body['data']['listComments'].first
+          expect(comment['request']).to include('id' => request.id.to_s, 'title' => request.title)
+          expect(comment['user']).to include('id' => user.id.to_s, 'name' => user.name)
+        end
+
+        it 'returns only inactive comments when filter active: false' do
+          graphql_request(query: query, variables: { filter: { active: false } })
+
+          expect(response).to have_http_status(:ok)
+          comments = response.parsed_body['data']['listComments']
+          expect(comments).to contain_exactly(
+            hash_including('id' => inactive_comment.id.to_s, 'body' => inactive_comment.body, 'active' => false)
+          )
+        end
+      end
+      # rubocop:enable RSpec/MultipleMemoizedHelpers
+
+      context 'when account has no comments' do
+        it 'returns empty array' do
+          graphql_request(query: query, variables: {})
+
+          expect(response).to have_http_status(:ok)
+          expect(response.parsed_body['data']['listComments']).to eq([])
+        end
+      end
+    end
+
     describe 'invalid query' do
       it 'returns errors' do
         graphql_request(query: 'query { invalidField }')

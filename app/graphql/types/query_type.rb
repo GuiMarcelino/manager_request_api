@@ -3,8 +3,8 @@
 module Types
   # Root query type containing all query fields.
   class QueryType < Types::BaseObject
-    field :list_requests, [Types::RequestType], null: false,
-                                                description: 'List requests for current account with optional filters.',
-                                                resolver: Queries::Requests::ListRequests
+    field :list_requests, [Types::RequestType], null: false, resolver: Queries::Requests::ListRequests
+
+    field :list_comments, [Types::CommentType], null: false, resolver: Queries::Comments::ListComments
   end
 end

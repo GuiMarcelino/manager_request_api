@@ -8,11 +8,5 @@ class Comment < ApplicationRecord
 
   validates :body, presence: true
 
-  scope :by_active, lambda { |active|
-    if active.nil?
-      all
-    else
-      (active ? where(active: true) : where(active: false))
-    end
-  }
+  scope :by_active, ->(active) { where(active: active) }
 end

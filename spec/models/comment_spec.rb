@@ -20,16 +20,30 @@ RSpec.describe Comment, type: :model do
   end
 
   describe 'scopes' do
-    # rubocop:disable RSpec/LetSetup -- active_record and inactive_record are used by shared example
-    let!(:active_record) do
-      create(:comment, account: account, request: request, user: user, active: true)
-    end
+    describe '.by_active' do
+      before { described_class.delete_all }
 
-    let!(:inactive_record) do
-      create(:comment, account: account, request: request, user: user, active: false)
-    end
-    # rubocop:enable RSpec/LetSetup
+      let(:active_comment) do
+        create(:comment, account: account, request: request, user: user, body: 'Ativo', active: true)
+      end
 
-    it_behaves_like 'by_active_scope_examples'
+      let(:inactive_comment) do
+        create(:comment, account: account, request: request, user: user, body: 'Inativo', active: false)
+      end
+
+      it 'returns only active comments when active is true' do
+        result = described_class.by_active(true)
+
+        expect(result).to contain_exactly(active_comment)
+        expect(result).not_to include(inactive_comment)
+      end
+
+      it 'returns only inactive comments when active is false' do
+        result = described_class.by_active(false)
+
+        expect(result).to contain_exactly(inactive_comment)
+        expect(result).not_to include(active_comment)
+      end
+    end
   end
 end

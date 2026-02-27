@@ -3,7 +3,7 @@
 module Queries
   module Objects
     module Comments
-      # Input type for filtering comments.
+      # Input type for filtering comments (active: true = only active comments).
       class Filter < Types::BaseInputObject
         graphql_name 'CommentFilter'
 
