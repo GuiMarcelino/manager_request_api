@@ -51,14 +51,12 @@ A API segue a **Opção A** do desafio.
 
 ### Headers de contexto
 
-Para identificar o usuário e a conta da requisição, envie os headers:
+add mo headers:
 
 | Header | Descrição |
 |--------|-----------|
 | `X-User-Id` | ID do usuário (define role e permissões via CanCanCan) |
-| `X-Account-Id` | ID da conta (multi-tenant) |
-
-Quando não enviados, a API usa `User.first` e `Account.first` como fallback. Se o ID informado não existir, volta para o fallback.
+| `X-Account-Id` | ID da conta |
 
 **Exemplo (Postman)**:
 
@@ -67,6 +65,10 @@ Content-Type: application/json
 X-User-Id: 1
 X-Account-Id: 1
 ```
+
+### Coleção Postman
+
+O arquivo `Manager.postman_collection.json` na raiz do projeto contém uma coleção pronta para uso no Postman. Importe-o no Postman (File → Import) para testar as queries e mutations da API com exemplos configurados.
 
 ## Decisões técnicas relevantes
 
@@ -87,13 +89,17 @@ O campo `comments` em `RequestType` aceita um argumento `filter: CommentFilter` 
 
 ### Evitar N+1 em listRequests
 
-A query `listRequests` retorna requests com `user`, `category` e `comments`. Para evitar N+1 (uma query por request ao acessar essas associações), o resolver usa `includes` do ActiveRecord:
+A query `listRequests` retorna requests com `user`, `category` e `comments`. Para evitar N+1 (uma query por request ao acessar essas associações), o schema usa **GraphQL::Dataloader** com `ActiveRecordAssociationSource`:
 
 ```ruby
-scope.includes(:user, :category, :comments)
+# Types::BaseObject
+def load_association(record, association, scope = nil)
+  source = GraphQL::Dataloader::ActiveRecordAssociationSource
+  context.dataloader.with(source, association, scope).load(record)
+end
 ```
 
-Assim, user, category e comments são carregados em batch na mesma query (ou em poucas queries adicionais), em vez de uma query por request. O DataLoader está habilitado no schema (`use GraphQL::Dataloader`), mas não é usado; o `includes` já resolve o problema para o cenário atual.
+O `RequestType` chama `load_association(object, :user)`, `load_association(object, :category)` e `load_association(object, :comments, scope)` para cada associação. O DataLoader faz o batch automático dessas cargas, evitando N+1.
 
 ## O que faria diferente com mais tempo
 
