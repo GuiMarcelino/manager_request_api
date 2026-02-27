@@ -22,7 +22,11 @@ module RequestManager
     end
 
     def reject_request
-      request.update!(rejected_reason: @rejected_reason, decided_at: Time.current)
+      request.update!(
+        rejected_reason: @rejected_reason,
+        decided_at: Time.current,
+        status: :rejected
+      )
       service_result(success: true, payload: request)
     end
   end

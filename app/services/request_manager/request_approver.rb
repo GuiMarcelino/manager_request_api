@@ -26,7 +26,7 @@ module RequestManager
     end
 
     def request_decided_at
-      request.update!(decided_at: Time.current)
+      request.update!(decided_at: Time.current, status: :approved)
       service_result(success: true, payload: request)
     end
   end
