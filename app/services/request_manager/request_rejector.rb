@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 module RequestManager
+  # Service to reject pending requests.
   class RequestRejector < ApplicationService
     def initialize(params)
+      super()
       @account = params.fetch(:account)
       @id = params.fetch(:id)
       @rejected_reason = params[:rejected_reason]
     end
 
     def call
-      return not_found_error("Request") unless request
+      return not_found_error('Request') unless request
       return missing_service_parameter(:rejected_reason) if @rejected_reason.blank?
 
       reject_request
@@ -18,7 +20,9 @@ module RequestManager
     private
 
     def request
-      @request ||= Request.find_by(id: @id, account_id: @account.id)
+      return @request if defined?(@request)
+
+      @request = Request.find_by(id: @id, account_id: @account.id)
     end
 
     def reject_request

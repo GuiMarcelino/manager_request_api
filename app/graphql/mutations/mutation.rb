@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Mutations
+  # Root mutation type containing all mutation fields.
   class Mutation < Types::BaseObject
     field :create_request, mutation: Mutations::Requests::CreateRequest
     field :submit_request, mutation: Mutations::Requests::SubmitRequest

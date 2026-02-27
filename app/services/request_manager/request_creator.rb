@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module RequestManager
+  # Service to create new requests.
   class RequestCreator < ApplicationService
     def initialize(params)
+      super()
       @account = params[:account]
       @user = params[:user]
       @title = params[:title]
@@ -32,11 +34,11 @@ module RequestManager
     end
 
     def error_user_not_in_account
-      service_result(success: false, errors: { message: "User does not belong to account", code: 422 })
+      service_result(success: false, errors: { message: 'User does not belong to account', code: 422 })
     end
 
     def error_category_not_in_account
-      service_result(success: false, errors: { message: "Category does not belong to account", code: 422 })
+      service_result(success: false, errors: { message: 'Category does not belong to account', code: 422 })
     end
 
     def create_request
@@ -54,7 +56,7 @@ module RequestManager
     end
 
     def validation_errors(request)
-      { message: request.errors.full_messages.join(", "), code: 422 }
+      { message: request.errors.full_messages.join(', '), code: 422 }
     end
   end
 end

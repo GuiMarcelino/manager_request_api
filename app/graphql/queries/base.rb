@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Queries
+  # Base class for GraphQL queries.
   class Base < GraphQL::Schema::Resolver
     private
 

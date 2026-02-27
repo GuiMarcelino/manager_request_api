@@ -2,8 +2,9 @@
 
 module Mutations
   module Requests
+    # Mutation to submit a draft request for approval.
     class SubmitRequest < Mutations::Base
-      graphql_name "SubmitRequest"
+      graphql_name 'SubmitRequest'
 
       argument :id, ID, required: true
 

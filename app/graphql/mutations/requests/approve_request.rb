@@ -2,8 +2,9 @@
 
 module Mutations
   module Requests
+    # Mutation to approve a pending request.
     class ApproveRequest < Mutations::Base
-      graphql_name "ApproveRequest"
+      graphql_name 'ApproveRequest'
 
       argument :id, ID, required: true
 

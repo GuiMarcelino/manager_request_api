@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Mutations
+  # Base class for GraphQL mutations.
   class Base < GraphQL::Schema::Mutation
     argument_class Types::BaseArgument
     field_class Types::BaseField
@@ -17,7 +18,7 @@ module Mutations
     private
 
     def raise_validation_error!(message, attribute: nil)
-      ext = { code: "VALIDATION_ERROR", http_status: 422 }
+      ext = { code: 'VALIDATION_ERROR', http_status: 422 }
       ext[:attribute] = attribute if attribute.present?
       raise GraphQL::ExecutionError.new(message, extensions: ext)
     end
@@ -33,7 +34,7 @@ module Mutations
       return { request: result.payload, errors: [] } if result.success?
 
       raise_validation_error!(
-        result.errors[:message].to_s.presence || "Validation failed",
+        result.errors[:message].to_s.presence || 'Validation failed',
         attribute: extract_attribute_from_message(result.errors[:message])
       )
     end
@@ -42,7 +43,7 @@ module Mutations
       return { comment: result.payload, errors: [] } if result.success?
 
       raise_validation_error!(
-        result.errors[:message].to_s.presence || "Validation failed",
+        result.errors[:message].to_s.presence || 'Validation failed',
         attribute: extract_attribute_from_message(result.errors[:message])
       )
     end

@@ -2,8 +2,9 @@
 
 module Mutations
   module Requests
+    # Mutation to reject a pending request.
     class RejectRequest < Mutations::Base
-      graphql_name "RejectRequest"
+      graphql_name 'RejectRequest'
 
       argument :id, ID, required: true
       argument :rejected_reason, String, required: true

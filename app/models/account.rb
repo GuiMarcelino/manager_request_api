@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Represents a tenant account in the system.
 class Account < ApplicationRecord
   has_many :users, inverse_of: :account, dependent: :restrict_with_error
   has_many :categories, inverse_of: :account, dependent: :restrict_with_error

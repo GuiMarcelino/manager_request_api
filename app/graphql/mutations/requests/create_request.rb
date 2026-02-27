@@ -2,8 +2,9 @@
 
 module Mutations
   module Requests
+    # Mutation to create a new request.
     class CreateRequest < Mutations::Base
-      graphql_name "CreateRequest"
+      graphql_name 'CreateRequest'
 
       argument :title, String, required: true
       argument :category_id, ID, required: true

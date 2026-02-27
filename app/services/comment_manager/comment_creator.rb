@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module CommentManager
+  # Service to create comments on requests.
   class CommentCreator < ApplicationService
     def initialize(params)
+      super()
       @account = params[:account]
       @request = params[:request]
       @user = params[:user]
@@ -22,7 +24,7 @@ module CommentManager
     end
 
     def error_request_not_in_account
-      service_result(success: false, errors: { message: "Request does not belong to account", code: 422 })
+      service_result(success: false, errors: { message: 'Request does not belong to account', code: 422 })
     end
 
     def create_comment
@@ -38,7 +40,7 @@ module CommentManager
     end
 
     def validation_errors(comment)
-      { message: comment.errors.full_messages.join(", "), code: 422 }
+      { message: comment.errors.full_messages.join(', '), code: 422 }
     end
   end
 end

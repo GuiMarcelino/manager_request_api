@@ -2,6 +2,7 @@
 
 module Queries
   module Requests
+    # Query to list requests with optional filters.
     class ListRequests < Queries::Base
       type [Types::RequestType], null: false
 

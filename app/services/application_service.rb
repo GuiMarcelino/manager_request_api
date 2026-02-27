@@ -3,6 +3,7 @@
 # Result object for service responses (Struct avoids ostruct dependency on Ruby 3.2).
 ServiceResult = Struct.new(:success?, :payload, :errors, keyword_init: true)
 
+# Base class for service objects.
 class ApplicationService
   def self.call(params = {})
     new(params).call

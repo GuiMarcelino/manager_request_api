@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 module CommentManager
+  # Service to destroy comments.
   class CommentDestructor < ApplicationService
     def initialize(params)
+      super()
       @account = params.fetch(:account)
       @user = params.fetch(:user)
       @id = params.fetch(:id)
     end
 
     def call
-      return not_found_error("Comment") unless comment
+      return not_found_error('Comment') unless comment
       return forbidden_error unless author_or_admin?
 
       destroy_comment
@@ -18,7 +20,9 @@ module CommentManager
     private
 
     def comment
-      @comment ||= Comment.find_by(id: @id, account_id: @account.id)
+      return @comment if defined?(@comment)
+
+      @comment = Comment.find_by(id: @id, account_id: @account.id)
     end
 
     def author_or_admin?
@@ -26,7 +30,7 @@ module CommentManager
     end
 
     def forbidden_error
-      service_result(success: false, errors: { message: "Only author or admin can remove comment", code: 403 })
+      service_result(success: false, errors: { message: 'Only author or admin can remove comment', code: 403 })
     end
 
     def destroy_comment

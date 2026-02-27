@@ -2,8 +2,10 @@
 
 module Queries
   module Concerns
+    # Concern for applying scopes to query results.
     module Scopable
       extend ActiveSupport::Concern
+
       def scoped_by(scope, filter)
         return scope if filter.blank?
 

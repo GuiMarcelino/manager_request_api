@@ -3,8 +3,9 @@
 module Queries
   module Objects
     module Requests
+      # Input type for filtering requests.
       class Filter < Types::BaseInputObject
-        graphql_name "RequestFilter"
+        graphql_name 'RequestFilter'
 
         argument :account_id, ID, required: true
         argument :status, String, required: false

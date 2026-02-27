@@ -2,8 +2,9 @@
 
 module Mutations
   module Comments
+    # Mutation to destroy a comment.
     class DestroyComment < Mutations::Base
-      graphql_name "DestroyComment"
+      graphql_name 'DestroyComment'
 
       argument :id, ID, required: true
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Types
+  # GraphQL type for Comment model.
   class CommentType < Types::BaseObject
     field :id, ID, null: false
     field :body, String, null: false

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Represents a user within an account.
 class User < ApplicationRecord
   # Constants
   ROLES = %i[
@@ -18,5 +19,5 @@ class User < ApplicationRecord
   has_many :comments, inverse_of: :user, dependent: :restrict_with_error
 
   validates :name, presence: true
-  validates :email, presence: true, uniqueness: { scope: :account_id }
+  validates :email, presence: true
 end

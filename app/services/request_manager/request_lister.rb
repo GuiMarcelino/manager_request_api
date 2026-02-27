@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module RequestManager
+  # Service to list and filter requests.
   class RequestLister < ApplicationService
     def initialize(params)
+      super()
       @account_id = params[:account_id] || params[:account]&.id
       @status = params[:status]
       @category_id = params[:category_id] || params[:category]&.id

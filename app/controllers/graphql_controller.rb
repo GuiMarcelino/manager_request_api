@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Controller for GraphQL API requests.
 class GraphqlController < ApplicationController
   # If accessing from outside this domain, nullify the session
   # This allows for outside API access while preventing CSRF attacks,
@@ -24,6 +25,7 @@ class GraphqlController < ApplicationController
     render json: result, status: status
   rescue StandardError => e
     raise e unless Rails.env.development?
+
     handle_error_in_development(e)
   end
 
@@ -57,19 +59,20 @@ class GraphqlController < ApplicationController
 
   def graphql_http_status(result)
     hash = result.respond_to?(:to_h) ? result.to_h : {}
-    errors = hash["errors"]
+    errors = hash['errors']
     return 200 if errors.blank? || !errors.is_a?(Array)
 
     first = errors.first
     return 200 unless first.is_a?(Hash)
 
-    first.dig("extensions", "http_status") || 422
+    first.dig('extensions', 'http_status') || 422
   end
 
-  def handle_error_in_development(e)
-    logger.error e.message
-    logger.error e.backtrace.join("\n")
+  def handle_error_in_development(exception)
+    logger.error exception.message
+    logger.error exception.backtrace.join("\n")
 
-    render json: { errors: [{ message: e.message, backtrace: e.backtrace }], data: {} }, status: 500
+    render json: { errors: [{ message: exception.message, backtrace: exception.backtrace }], data: {} },
+           status: :internal_server_error
   end
 end

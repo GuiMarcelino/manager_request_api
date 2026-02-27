@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Represents a request in the approval workflow.
 class Request < ApplicationRecord
   # Constants
   STATUSES = %i[
