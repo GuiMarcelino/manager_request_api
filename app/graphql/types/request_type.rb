@@ -16,16 +16,16 @@ module Types
     end
 
     def user
-      object.user
+      load_association(object, :user)
     end
 
     def category
-      object.category
+      load_association(object, :category)
     end
 
     def comments(filter: nil)
-      scope = object.comments
-      scope.by_active(filter&.active)
+      scope = filter ? Comment.by_active(filter.active) : nil
+      load_association(object, :comments, scope)
     end
   end
 end

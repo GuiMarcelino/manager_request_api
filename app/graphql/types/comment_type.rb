@@ -9,11 +9,11 @@ module Types
     field :user, Types::UserType, null: false
 
     def request
-      object.request
+      load_association(object, :request)
     end
 
     def user
-      object.user
+      load_association(object, :user)
     end
   end
 end

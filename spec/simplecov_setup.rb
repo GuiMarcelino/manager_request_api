@@ -22,6 +22,8 @@ SimpleCov.start "rails" do
   add_filter "app/graphql/types/base_field.rb"
   add_filter "app/graphql/types/base_input_object.rb"
   add_filter "app/graphql/types/node_type.rb"
+  add_filter "app/graphql/types/base_object.rb"
+  add_filter "app/graphql/types/account_type.rb"
   add_filter "app/graphql/resolvers/base_resolver.rb"
   add_filter "app/graphql/queries/concerns/scopable.rb"
 end

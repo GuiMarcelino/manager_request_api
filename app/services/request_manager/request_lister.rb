@@ -21,7 +21,7 @@ module RequestManager
       scope = scope.by_status(@status) if @status.present?
       scope = scope.by_category_id(@category_id) if @category_id.present?
 
-      service_result(success: true, payload: scope.includes(:user, :category, :comments))
+      service_result(success: true, payload: scope)
     end
   end
 end
