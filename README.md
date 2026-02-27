@@ -49,6 +49,25 @@ A API segue a **Opção A** do desafio.
 
 - **POST** `/graphql` — corpo: `{ "query": "...", "variables": { ... }, "operationName": "..." }` (opcional)
 
+### Headers de contexto
+
+Para identificar o usuário e a conta da requisição, envie os headers:
+
+| Header | Descrição |
+|--------|-----------|
+| `X-User-Id` | ID do usuário (define role e permissões via CanCanCan) |
+| `X-Account-Id` | ID da conta (multi-tenant) |
+
+Quando não enviados, a API usa `User.first` e `Account.first` como fallback. Se o ID informado não existir, volta para o fallback.
+
+**Exemplo (Postman)**:
+
+```
+Content-Type: application/json
+X-User-Id: 1
+X-Account-Id: 1
+```
+
 ## Decisões técnicas relevantes
 
 ### Scopable no GraphQL
