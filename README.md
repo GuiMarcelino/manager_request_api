@@ -11,6 +11,12 @@ rails db:setup
 
 O `db:setup` cria o banco, carrega o schema e executa as seeds.
 
+Para executar apenas as seeds (sem recriar o banco):
+
+```bash
+rails db:seed
+```
+
 Subir a aplicação:
 
 ```bash
