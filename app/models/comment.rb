@@ -6,4 +6,7 @@ class Comment < ApplicationRecord
   belongs_to :user, inverse_of: :comments
 
   validates :body, presence: true
+
+  # Comentários ativos = não removidos (sem soft delete, todos são ativos)
+  scope :active, -> { all }
 end

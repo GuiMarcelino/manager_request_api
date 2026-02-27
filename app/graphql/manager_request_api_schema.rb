@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ManagerRequestApiSchema < GraphQL::Schema
-  mutation(Types::MutationType)
+  mutation(Mutations::Mutation)
   query(Types::QueryType)
 
   # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)

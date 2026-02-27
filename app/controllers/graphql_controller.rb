@@ -11,11 +11,17 @@ class GraphqlController < ApplicationController
     query = params[:query]
     operation_name = params[:operationName]
     context = {
-      current_user: current_user,
-      current_account: current_account
+      current_user: default_user,
+      current_account: default_account
     }
-    result = ManagerRequestApiSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
-    render json: result
+    result = ManagerRequestApiSchema.execute(
+      query,
+      variables: variables,
+      context: context,
+      operation_name: operation_name
+    )
+    status = graphql_http_status(result)
+    render json: result, status: status
   rescue StandardError => e
     raise e unless Rails.env.development?
     handle_error_in_development(e)
@@ -23,24 +29,12 @@ class GraphqlController < ApplicationController
 
   private
 
-  def current_user
-    return nil unless current_user_id
-
-    @current_user ||= User.find_by(id: current_user_id, account_id: current_account&.id)
+  def default_user
+    @default_user ||= User.first
   end
 
-  def current_account
-    return nil unless current_account_id
-
-    @current_account ||= Account.find_by(id: current_account_id)
-  end
-
-  def current_user_id
-    request.headers["X-User-Id"] || params[:user_id]
-  end
-
-  def current_account_id
-    request.headers["X-Account-Id"] || params[:account_id]
+  def default_account
+    @default_account ||= Account.first
   end
 
   # Handle variables in form data, JSON body, or a blank value
@@ -61,6 +55,17 @@ class GraphqlController < ApplicationController
     else
       raise ArgumentError, "Unexpected parameter: #{variables_param}"
     end
+  end
+
+  def graphql_http_status(result)
+    hash = result.respond_to?(:to_h) ? result.to_h : {}
+    errors = hash["errors"]
+    return 200 if errors.blank? || !errors.is_a?(Array)
+
+    first = errors.first
+    return 200 unless first.is_a?(Hash)
+
+    first.dig("extensions", "http_status") || 422
   end
 
   def handle_error_in_development(e)

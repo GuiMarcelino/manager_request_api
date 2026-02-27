@@ -21,4 +21,7 @@ class Request < ApplicationRecord
   has_many :comments, inverse_of: :request, dependent: :restrict_with_error
 
   validates :title, presence: true
+
+  scope :pending, -> { where(status: :pending_approval) }
+  scope :by_account, ->(account) { where(account_id: account.id) }
 end

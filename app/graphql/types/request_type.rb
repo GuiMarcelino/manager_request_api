@@ -22,7 +22,7 @@ module Types
     end
 
     def comments
-      object.comments
+      object.comments.active
     end
   end
 end
