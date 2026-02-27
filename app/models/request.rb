@@ -22,6 +22,7 @@ class Request < ApplicationRecord
 
   validates :title, presence: true
 
-  scope :pending, -> { where(status: :pending_approval) }
-  scope :by_account, ->(account) { where(account_id: account.id) }
+  scope :by_account_id, ->(account_id) { account_id.present? ? where(account_id: account_id) : all }
+  scope :by_status, ->(status) { status.present? ? where(status: status) : all }
+  scope :by_category_id, ->(category_id) { category_id.present? ? where(category_id: category_id) : all }
 end

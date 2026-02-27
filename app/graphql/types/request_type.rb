@@ -11,7 +11,9 @@ module Types
     field :decided_at, GraphQL::Types::ISO8601DateTime, null: true
     field :user, Types::UserType, null: false
     field :category, Types::CategoryType, null: false
-    field :comments, [Types::CommentType], null: false
+    field :comments, [Types::CommentType], null: false do
+      argument :filter, Queries::Objects::Comments::Filter, required: false
+    end
 
     def user
       object.user
@@ -21,8 +23,11 @@ module Types
       object.category
     end
 
-    def comments
-      object.comments.active
+    def comments(filter: nil)
+      scope = object.comments
+      return scope.active if filter.blank?
+
+      scope.by_active(filter.active)
     end
   end
 end

@@ -7,6 +7,5 @@ class Comment < ApplicationRecord
 
   validates :body, presence: true
 
-  # Comentários ativos = não removidos (sem soft delete, todos são ativos)
-  scope :active, -> { all }
+  scope :by_active, ->(active) { active.nil? ? all : (active ? where(active: true) : where(active: false)) }
 end

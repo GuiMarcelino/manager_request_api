@@ -3,10 +3,11 @@
 require "rails_helper"
 
 RSpec.describe Comment, type: :model do
+  subject(:comment) { build(:comment, account: account, request: request, user: user) }
+
   let(:account) { create(:account) }
   let(:user) { create(:user, account: account) }
   let(:request) { create(:request, account: account, user: user, category: create(:category, account: account)) }
-  let(:comment) { build(:comment, account: account, request: request, user: user) }
 
   describe "associations" do
     it { expect(comment).to belong_to(:account) }
@@ -16,5 +17,17 @@ RSpec.describe Comment, type: :model do
 
   describe "validations" do
     it { expect(comment).to validate_presence_of(:body) }
+  end
+
+  describe "scopes" do
+    let!(:active_record) do
+      create(:comment, account: account, request: request, user: user, active: true)
+    end
+
+    let!(:inactive_record) do
+      create(:comment, account: account, request: request, user: user, active: false)
+    end
+
+    it_behaves_like "by_active_scope_examples"
   end
 end
