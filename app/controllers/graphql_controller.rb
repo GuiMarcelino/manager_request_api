@@ -8,21 +8,10 @@ class GraphqlController < ApplicationController
   # protect_from_forgery with: :null_session
 
   def execute
-    variables = prepare_variables(params[:variables])
-    query = params[:query]
-    operation_name = params[:operationName]
-    context = {
-      current_user: default_user,
-      current_account: default_account
-    }
-    result = ManagerRequestApiSchema.execute(
-      query,
-      variables: variables,
-      context: context,
-      operation_name: operation_name
-    )
-    status = graphql_http_status(result)
-    render json: result, status: status
+    result = execute_graphql
+    render json: result, status: graphql_http_status(result)
+  rescue CanCan::AccessDenied => e
+    render_access_denied(e)
   rescue StandardError => e
     raise e unless Rails.env.development?
 
@@ -31,12 +20,50 @@ class GraphqlController < ApplicationController
 
   private
 
+  def execute_graphql
+    ManagerRequestApiSchema.execute(
+      params[:query],
+      variables: prepare_variables(params[:variables]),
+      context: graphql_context,
+      operation_name: params[:operationName]
+    )
+  end
+
+  def graphql_context
+    {
+      current_user: default_user,
+      current_account: default_account,
+      current_ability: Ability.new(default_user)
+    }
+  end
+
+  def render_access_denied(exception)
+    render json: {
+      errors: [{ message: exception.message, extensions: { code: 'FORBIDDEN', http_status: 403 } }],
+      data: nil
+    }, status: :forbidden
+  end
+
   def default_user
-    @default_user ||= User.first
+    @default_user ||= resolve_user_from_request
   end
 
   def default_account
-    @default_account ||= Account.first
+    @default_account ||= resolve_account_from_request
+  end
+
+  def resolve_user_from_request
+    user_id = request.headers['X-User-Id']
+    return User.first if user_id.blank?
+
+    User.find_by(id: user_id) || User.first
+  end
+
+  def resolve_account_from_request
+    account_id = request.headers['X-Account-Id']
+    return Account.first if account_id.blank?
+
+    Account.find_by(id: account_id) || Account.first
   end
 
   # Handle variables in form data, JSON body, or a blank value

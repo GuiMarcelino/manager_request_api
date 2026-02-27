@@ -10,6 +10,7 @@ module Queries
 
       def resolve(filter:)
         result = RequestManager::RequestLister.call(
+          ability: current_ability,
           account_id: filter.account_id,
           status: filter.status,
           category_id: filter.category_id

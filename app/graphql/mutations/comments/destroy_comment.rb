@@ -12,6 +12,11 @@ module Mutations
       field :errors, [String], null: false
 
       def resolve(id:)
+        comment = Comment.find_by(id: id.to_i, account_id: current_account.id)
+        raise_validation_error!('Comment not found', attribute: 'id') unless comment
+
+        current_ability.authorize!(:destroy, comment)
+
         result = CommentManager::CommentDestructor.call(
           account: current_account,
           user: current_user,

@@ -13,6 +13,11 @@ module Mutations
       field :errors, [String], null: false
 
       def resolve(id:, rejected_reason:)
+        request = Request.find_by(id: id.to_i, account_id: current_account.id)
+        raise_validation_error!('Request not found', attribute: 'id') unless request
+
+        current_ability.authorize!(:reject, request)
+
         result = RequestManager::RequestRejector.call(
           account: current_account,
           id: id.to_i,

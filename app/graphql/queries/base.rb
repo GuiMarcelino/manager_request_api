@@ -12,5 +12,9 @@ module Queries
     def current_user
       context[:current_user]
     end
+
+    def current_ability
+      context[:current_ability]
+    end
   end
 end

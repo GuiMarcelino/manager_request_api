@@ -28,59 +28,73 @@ RSpec.describe Request, type: :model do
     end
   end
 
-  # rubocop:disable RSpec/MultipleMemoizedHelpers -- shared setup for scope examples
   describe 'scopes' do
-    let!(:first_object) do
-      create(:request, account: account, user: user, category: category, status: :draft)
-    end
-
-    let!(:second_object) do
-      create(:request, account: account, user: user, category: category, status: :approved)
-    end
-
-    let(:other_account) { create(:account) }
-    let(:other_category) { create(:category, account: account) }
-
-    let!(:request_other_account) do
-      create(:request, account: other_account, user: create(:user, account: other_account),
-                       category: create(:category, account: other_account), status: :draft)
-    end
-
-    let!(:request_other_category) do
-      create(:request, account: account, user: user, category: other_category, status: :draft)
-    end
-
     describe '.by_account_id' do
       it_behaves_like 'by_id_scope_examples', 'account_id' do
-        let(:matching_records) { [first_object, second_object, request_other_category] }
-        let(:excluded_records) { [request_other_account] }
-        let(:filter_value) { account.id }
+        let(:scope_test_data) do
+          other_acc = create(:account)
+          other_cat = create(:category, account: account)
+          first = create(:request, account: account, user: user, category: category, status: :draft)
+          second = create(:request, account: account, user: user, category: category, status: :approved)
+          req_other_acc = create(:request, account: other_acc,
+                                           user: create(:user, account: other_acc),
+                                           category: create(:category, account: other_acc),
+                                           status: :draft)
+          req_other_cat = create(:request, account: account, user: user, category: other_cat, status: :draft)
+          {
+            matching_records: [first, second, req_other_cat],
+            excluded_records: [req_other_acc],
+            filter_value: account.id
+          }
+        end
       end
     end
 
     describe '.by_status' do
-      it_behaves_like 'by_value_scope_examples', 'status' do
-        let(:matching_records) { [first_object, request_other_account, request_other_category] }
-        let(:excluded_records) { [second_object] }
-        let(:filter_value) { 'draft' }
+      let(:scope_test_data) do
+        other_acc = create(:account)
+        other_cat = create(:category, account: account)
+        first = create(:request, account: account, user: user, category: category, status: :draft)
+        second = create(:request, account: account, user: user, category: category, status: :approved)
+        req_other_acc = create(:request, account: other_acc,
+                                         user: create(:user, account: other_acc),
+                                         category: create(:category, account: other_acc),
+                                         status: :draft)
+        req_other_cat = create(:request, account: account, user: user, category: other_cat, status: :draft)
+        {
+          matching_records: [first, req_other_acc, req_other_cat],
+          excluded_records: [second],
+          filter_value: 'draft',
+          first: first,
+          second: second
+        }
       end
+
+      it_behaves_like 'by_value_scope_examples', 'status'
 
       context 'when filtering by approved' do
         it 'returns only approved requests' do
           result = described_class.by_status('approved')
-          expect(result).to include(second_object)
-          expect(result).not_to include(first_object)
+          expect(result).to include(scope_test_data[:second])
+          expect(result).not_to include(scope_test_data[:first])
         end
       end
     end
 
     describe '.by_category_id' do
       it_behaves_like 'by_id_scope_examples', 'category_id' do
-        let(:matching_records) { [first_object, second_object] }
-        let(:excluded_records) { [request_other_category] }
-        let(:filter_value) { category.id }
+        let(:scope_test_data) do
+          other_cat = create(:category, account: account)
+          first = create(:request, account: account, user: user, category: category, status: :draft)
+          second = create(:request, account: account, user: user, category: category, status: :approved)
+          req_other_cat = create(:request, account: account, user: user, category: other_cat, status: :draft)
+          {
+            matching_records: [first, second],
+            excluded_records: [req_other_cat],
+            filter_value: category.id
+          }
+        end
       end
     end
   end
-  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

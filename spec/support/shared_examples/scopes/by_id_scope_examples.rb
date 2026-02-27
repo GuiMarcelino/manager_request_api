@@ -5,14 +5,16 @@ RSpec.shared_examples 'by_id_scope_examples' do |field|
 
   describe ".#{"by_#{field}"}" do
     it "returns all #{model.pluralize} when #{field} is blank" do
+      data = scope_test_data
       result = described_class.public_send("by_#{field}", nil)
-      expect(result).to include(*matching_records, *excluded_records)
+      expect(result).to include(*data[:matching_records], *data[:excluded_records])
     end
 
     it "returns only #{model.pluralize} matching the given #{field}" do
-      result = described_class.public_send("by_#{field}", filter_value)
-      expect(result).to include(*matching_records)
-      expect(result).not_to include(*excluded_records)
+      data = scope_test_data
+      result = described_class.public_send("by_#{field}", data[:filter_value])
+      expect(result).to include(*data[:matching_records])
+      expect(result).not_to include(*data[:excluded_records])
     end
   end
 end

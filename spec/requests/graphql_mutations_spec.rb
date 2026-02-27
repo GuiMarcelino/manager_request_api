@@ -17,15 +17,11 @@ RSpec.describe 'GraphQL API Mutations via HTTP', type: :request do
     account
     user
     category
-
-    # rubocop:disable RSpec/AnyInstance -- GraphqlController uses default_user/account for test context
-    allow_any_instance_of(GraphqlController).to receive(:default_user).and_return(user)
-    allow_any_instance_of(GraphqlController).to receive(:default_account).and_return(account)
-    # rubocop:enable RSpec/AnyInstance
   end
 
   def graphql_request(query:, variables: {})
-    post '/graphql', params: { query: query, variables: variables }, as: :json
+    headers = { 'X-User-Id' => user.id.to_s, 'X-Account-Id' => account.id.to_s }
+    post '/graphql', params: { query: query, variables: variables }, as: :json, headers: headers
   end
 
   describe 'POST /graphql mutations' do
@@ -110,19 +106,23 @@ RSpec.describe 'GraphQL API Mutations via HTTP', type: :request do
       end
     end
 
-    # rubocop:disable RSpec/MultipleMemoizedHelpers -- request + comment setup needed
     describe 'destroyComment' do
-      let!(:request) { create(:request, account: account, user: user, category: category) }
-      let!(:comment) { create(:comment, account: account, request: request, user: user, body: 'Comentário') }
-      let(:query) { "mutation { destroyComment(id: \"#{comment.id}\") { comment { id } errors } }" }
+      let(:comment_and_request) do
+        req = create(:request, account: account, user: user, category: category)
+        { comment: create(:comment, account: account, request: req, user: user, body: 'Comentário') }
+      end
+
+      let(:query) do
+        "mutation { destroyComment(id: \"#{comment_and_request[:comment].id}\") { comment { id } errors } }"
+      end
 
       it 'destroys a comment' do
         graphql_request(query: query)
 
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body.dig('data', 'destroyComment', 'comment', 'id')).to eq(comment.id.to_s)
+        expect(response.parsed_body.dig('data', 'destroyComment', 'comment', 'id'))
+          .to eq(comment_and_request[:comment].id.to_s)
       end
     end
-    # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 end

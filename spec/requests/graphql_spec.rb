@@ -17,15 +17,11 @@ RSpec.describe 'GraphQL API', type: :request do
     account
     user
     category
-
-    # rubocop:disable RSpec/AnyInstance -- GraphqlController uses default_user/account for test context
-    allow_any_instance_of(GraphqlController).to receive(:default_user).and_return(user)
-    allow_any_instance_of(GraphqlController).to receive(:default_account).and_return(account)
-    # rubocop:enable RSpec/AnyInstance
   end
 
   def graphql_request(query:, variables: {})
-    post '/graphql', params: { query: query, variables: variables }, as: :json
+    headers = { 'X-User-Id' => user.id.to_s, 'X-Account-Id' => account.id.to_s }
+    post '/graphql', params: { query: query, variables: variables }, as: :json, headers: headers
   end
 
   describe 'POST /graphql' do
@@ -46,11 +42,20 @@ RSpec.describe 'GraphQL API', type: :request do
         GQL
       end
 
-      # rubocop:disable RSpec/MultipleMemoizedHelpers -- nested contexts need shared setup
       context 'when account has requests' do
-        let!(:request) do
-          create(:request, account: account, user: user, category: category, title: 'Solicitação de teste')
+        let(:request_with_comments) do
+          req = create(:request, account: account, user: user, category: category, title: 'Solicitação de teste')
+          {
+            request: req,
+            comments: {
+              active: create(:comment, account: account, request: req, user: user, body: 'Ativo', active: true),
+              inactive: create(:comment, account: account, request: req, user: user, body: 'Inativo', active: false)
+            },
+            comment: create(:comment, account: account, request: req, user: user, body: 'Comentário teste')
+          }
         end
+
+        before { request_with_comments }
 
         it 'returns requests' do
           graphql_request(query: query, variables: { filter: { accountId: account.id.to_s } })
@@ -96,13 +101,6 @@ RSpec.describe 'GraphQL API', type: :request do
         end
 
         context 'with comments filter active false' do
-          let!(:active_comment) do
-            create(:comment, account: account, request: request, user: user, body: 'Ativo', active: true)
-          end
-          let!(:inactive_comment) do
-            create(:comment, account: account, request: request, user: user, body: 'Inativo', active: false)
-          end
-
           it 'returns only inactive comments when filter active false' do
             query_with_filter = <<~GQL
               query ListRequests($filter: RequestFilter!) {
@@ -113,27 +111,22 @@ RSpec.describe 'GraphQL API', type: :request do
 
             expect(response).to have_http_status(:ok)
             json = response.parsed_body
-            comments = json['data']['listRequests'].first['comments']
-            expect(comments.pluck('body')).to include(inactive_comment.body)
-            expect(comments.pluck('body')).not_to include(active_comment.body)
+            response_comments = json['data']['listRequests'].first['comments']
+            expect(response_comments.pluck('body')).to include(request_with_comments[:comments][:inactive].body)
+            expect(response_comments.pluck('body')).not_to include(request_with_comments[:comments][:active].body)
           end
         end
 
         context 'with comments' do
-          let!(:comment) do
-            create(:comment, account: account, request: request, user: user, body: 'Comentário teste')
-          end
-
           it 'returns comments with request' do
             graphql_request(query: query, variables: { filter: { accountId: account.id.to_s } })
             expect(response).to have_http_status(:ok)
-            comments = response.parsed_body['data']['listRequests'].first['comments']
-            expect(comments).not_to be_empty
-            expect(comments.first['body']).to eq(comment.body)
+            response_comments = response.parsed_body['data']['listRequests'].first['comments']
+            expect(response_comments).not_to be_empty
+            expect(response_comments.pluck('body')).to include(request_with_comments[:comment].body)
           end
         end
       end
-      # rubocop:enable RSpec/MultipleMemoizedHelpers
 
       context 'when account has no requests' do
         it 'returns empty array' do
@@ -169,31 +162,37 @@ RSpec.describe 'GraphQL API', type: :request do
         GQL
       end
 
-      # rubocop:disable RSpec/MultipleMemoizedHelpers -- shared setup for listComments
       context 'when account has comments' do
-        let!(:request) { create(:request, account: account, user: user, category: category) }
-        let!(:active_comment) do
-          create(:comment, account: account, request: request, user: user, body: 'Comentário ativo', active: true)
+        let(:comments_data) do
+          req = create(:request, account: account, user: user, category: category)
+          {
+            request: req,
+            active: create(:comment, account: account, request: req, user: user,
+                                     body: 'Comentário ativo', active: true),
+            inactive: create(:comment, account: account, request: req, user: user,
+                                       body: 'Comentário inativo', active: false)
+          }
         end
-        let!(:inactive_comment) do
-          create(:comment, account: account, request: request, user: user, body: 'Comentário inativo', active: false)
-        end
+
+        before { comments_data }
 
         it 'returns all comments when active filter is not provided' do
           graphql_request(query: query, variables: {})
 
           expect(response).to have_http_status(:ok)
-          comments = response.parsed_body['data']['listComments']
-          expect(comments.pluck('id')).to contain_exactly(active_comment.id.to_s, inactive_comment.id.to_s)
+          response_comments = response.parsed_body['data']['listComments']
+          expect(response_comments.pluck('id'))
+            .to contain_exactly(comments_data[:active].id.to_s, comments_data[:inactive].id.to_s)
         end
 
         it 'returns only active comments when filter active: true' do
           graphql_request(query: query, variables: { filter: { active: true } })
 
           expect(response).to have_http_status(:ok)
-          comments = response.parsed_body['data']['listComments']
-          expect(comments).to contain_exactly(
-            hash_including('id' => active_comment.id.to_s, 'body' => active_comment.body, 'active' => true)
+          response_comments = response.parsed_body['data']['listComments']
+          expect(response_comments).to contain_exactly(
+            hash_including('id' => comments_data[:active].id.to_s,
+                           'body' => comments_data[:active].body, 'active' => true)
           )
         end
 
@@ -201,22 +200,24 @@ RSpec.describe 'GraphQL API', type: :request do
           graphql_request(query: query, variables: { filter: { active: true } })
 
           expect(response).to have_http_status(:ok)
-          comment = response.parsed_body['data']['listComments'].first
-          expect(comment['request']).to include('id' => request.id.to_s, 'title' => request.title)
-          expect(comment['user']).to include('id' => user.id.to_s, 'name' => user.name)
+          comment_data = response.parsed_body['data']['listComments'].first
+          expect(comment_data['request'])
+            .to include('id' => comments_data[:request].id.to_s,
+                        'title' => comments_data[:request].title)
+          expect(comment_data['user']).to include('id' => user.id.to_s, 'name' => user.name)
         end
 
         it 'returns only inactive comments when filter active: false' do
           graphql_request(query: query, variables: { filter: { active: false } })
 
           expect(response).to have_http_status(:ok)
-          comments = response.parsed_body['data']['listComments']
-          expect(comments).to contain_exactly(
-            hash_including('id' => inactive_comment.id.to_s, 'body' => inactive_comment.body, 'active' => false)
+          response_comments = response.parsed_body['data']['listComments']
+          expect(response_comments).to contain_exactly(
+            hash_including('id' => comments_data[:inactive].id.to_s,
+                           'body' => comments_data[:inactive].body, 'active' => false)
           )
         end
       end
-      # rubocop:enable RSpec/MultipleMemoizedHelpers
 
       context 'when account has no comments' do
         it 'returns empty array' do
@@ -261,9 +262,10 @@ RSpec.describe 'GraphQL API', type: :request do
     end
 
     describe 'request with full fields' do
-      let!(:request) do
+      let(:request) do
         create(:request, account: account, user: user, category: category,
-                         title: 'Aprovada', status: :approved, submitted_at: 1.day.ago, decided_at: Time.current)
+                         title: 'Aprovada', status: :approved, submitted_at: 1.day.ago,
+                         decided_at: Time.current)
       end
 
       let(:query) do
@@ -273,6 +275,8 @@ RSpec.describe 'GraphQL API', type: :request do
           }
         GQL
       end
+
+      before { request }
 
       it 'returns request with datetime fields' do
         graphql_request(query: query, variables: { filter: { accountId: account.id.to_s } })

@@ -10,6 +10,7 @@ module Queries
 
       def resolve(filter: nil)
         result = CommentManager::CommentLister.call(
+          ability: current_ability,
           active: filter&.active
         )
         return [] unless result.success?

@@ -13,6 +13,8 @@ module Mutations
       field :errors, [String], null: false
 
       def resolve(request_id:, body:)
+        current_ability.authorize!(:create, Comment)
+
         request = Request.find_by(id: request_id, account_id: current_account.id)
         raise_validation_error!('Request not found', attribute: 'requestId') unless request
 

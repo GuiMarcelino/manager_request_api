@@ -15,6 +15,10 @@ module Mutations
       context[:current_user]
     end
 
+    def current_ability
+      context[:current_ability]
+    end
+
     private
 
     def raise_validation_error!(message, attribute: nil)

@@ -14,6 +14,8 @@ module Mutations
       field :errors, [String], null: false
 
       def resolve(title:, category_id:, description: nil)
+        current_ability.authorize!(:create, Request)
+
         category = Category.find_by(id: category_id, account_id: current_account.id)
 
         result = RequestManager::RequestCreator.call(

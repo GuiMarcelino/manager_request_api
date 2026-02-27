@@ -9,6 +9,7 @@ gem 'pg', '~> 1.1'
 # Enumerated attributes (role, status, etc.)
 gem 'enumerize'
 # Use the Puma web server [https://github.com/puma/puma]
+gem 'cancancan'
 gem 'cpf_cnpj'
 gem 'graphql'
 gem 'puma', '>= 5.0'
