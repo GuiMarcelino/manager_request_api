@@ -1,0 +1,354 @@
+{
+	"info": {
+		"_postman_id": "dfdd8552-eef9-42bd-bcaf-a0f5c9325072",
+		"name": "Manager",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16992658",
+		"_collection_link": "https://red-capsule-144731.postman.co/workspace/ManageRequestAPI~cdde3950-bc53-42f7-86c8-22838bc766d0/collection/16992658-dfdd8552-eef9-42bd-bcaf-a0f5c9325072?action=share&source=collection_link&creator=16992658"
+	},
+	"item": [
+		{
+			"name": "Mutation",
+			"item": [
+				{
+					"name": "Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  createRequest(title: \"Solicitação teste dois\", categoryId: \"105\", description: \"Descrição opcional dois\") {\n    request {\n      id\n      title\n      description\n      status\n      user {\n        id\n        name\n      }\n      category {\n        id\n        name\n      }\n    }\n    errors\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RequestSubmitter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  submitRequest(id: \"2854\") {\n    request {\n      id\n      title\n      status\n      submittedAt\n      user { id name }\n      category { id name }\n    }\n    errors\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sem permissão RequestApprover",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  approveRequest(id: \"67\") {\n    request {\n      id\n      title\n      status\n      submittedAt\n      decidedAt\n      user { id name }\n      category { id name }\n    }\n    errors\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Com Admin RequestApprover",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  approveRequest(id: \"2854\") {\n    request {\n      id\n      title\n      status\n      submittedAt\n      decidedAt\n      user { id name }\n      category { id name }\n    }\n    errors\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "rejectRequest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  rejectRequest(id: \"2854\", rejectedReason: \"Documentação incompleta\") {\n    request {\n      id\n      title\n      status\n      rejectedReason\n      decidedAt\n      user { id name }\n      category { id name }\n    }\n    errors\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createComment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  createComment(requestId: \"2854\", body: \"Comentário de acompanhamento da solicitação.\") {\n    comment {\n      id\n      body\n      request {\n        id\n        title\n      }\n      user {\n        id\n        name\n      }\n    }\n    errors\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteComment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n  destroyComment(id: \"770\") {\n    comment {\n      id\n      body\n      request { \n        id \n        title \n      }\n      user { \n        id \n        name \n      }\n    }\n    errors\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Query",
+			"item": [
+				{
+					"name": "Filtrar combinado",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  listRequests(filter: { accountId: \"120\", status: \"pending_approval\"}) {\n    id\n    title\n    status\n    user { id name }\n    category {\n      id\n      name\n    }\n    comments {\n      id\n      body\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filtrar comments active",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Account-Id",
+								"value": "120",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "120",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  listRequests {\n    id\n    title\n    status\n    comments(filter: { active: true }) {\n      id\n      body\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
