@@ -6,7 +6,7 @@ module Queries
       class Filter < Types::BaseInputObject
         graphql_name "RequestFilter"
 
-        argument :account_id, ID, required: false
+        argument :account_id, ID, required: true
         argument :status, String, required: false
         argument :category_id, ID, required: false
       end

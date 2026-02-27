@@ -30,7 +30,7 @@ RSpec.describe "GraphQL API", type: :request do
     describe "listRequests query" do
       let(:query) do
         <<~GQL
-          query ListRequests($filter: RequestFilter) {
+          query ListRequests($filter: RequestFilter!) {
             listRequests(filter: $filter) {
               id
               title
@@ -50,7 +50,7 @@ RSpec.describe "GraphQL API", type: :request do
         end
 
         it "returns requests" do
-          graphql_request(query: query)
+          graphql_request(query: query, variables: { filter: { accountId: account.id.to_s } })
 
           expect(response).to have_http_status(:ok)
           json = response.parsed_body
@@ -62,7 +62,7 @@ RSpec.describe "GraphQL API", type: :request do
 
         context "with filter by status" do
           it "returns filtered requests" do
-            graphql_request(query: query, variables: { filter: { status: "draft" } })
+            graphql_request(query: query, variables: { filter: { accountId: account.id.to_s, status: "draft" } })
 
             expect(response).to have_http_status(:ok)
             json = response.parsed_body
@@ -72,7 +72,7 @@ RSpec.describe "GraphQL API", type: :request do
 
         context "with filter by category_id" do
           it "returns filtered requests" do
-            graphql_request(query: query, variables: { filter: { categoryId: category.id.to_s } })
+            graphql_request(query: query, variables: { filter: { accountId: account.id.to_s, categoryId: category.id.to_s } })
 
             expect(response).to have_http_status(:ok)
             json = response.parsed_body
@@ -100,9 +100,11 @@ RSpec.describe "GraphQL API", type: :request do
 
           it "returns only inactive comments when filter active false" do
             query_with_filter = <<~GQL
-              query ListRequests { listRequests { id comments(filter: { active: false }) { id body } } }
+              query ListRequests($filter: RequestFilter!) {
+                listRequests(filter: $filter) { id comments(filter: { active: false }) { id body } }
+              }
             GQL
-            graphql_request(query: query_with_filter)
+            graphql_request(query: query_with_filter, variables: { filter: { accountId: account.id.to_s } })
 
             expect(response).to have_http_status(:ok)
             json = response.parsed_body
@@ -118,7 +120,7 @@ RSpec.describe "GraphQL API", type: :request do
           end
 
           it "returns comments with request" do
-            graphql_request(query: query)
+            graphql_request(query: query, variables: { filter: { accountId: account.id.to_s } })
             expect(response).to have_http_status(:ok)
             expect(response.parsed_body["data"]["listRequests"].first["comments"]).not_to be_empty
           end
@@ -127,10 +129,19 @@ RSpec.describe "GraphQL API", type: :request do
 
       context "when account has no requests" do
         it "returns empty array" do
-          graphql_request(query: query)
+          graphql_request(query: query, variables: { filter: { accountId: account.id.to_s } })
 
           expect(response).to have_http_status(:ok)
           expect(response.parsed_body["data"]["listRequests"]).to eq([])
+        end
+      end
+
+      context "when account_id is not provided" do
+        it "returns validation error" do
+          graphql_request(query: query, variables: { filter: { status: "draft" } })
+
+          json = response.parsed_body
+          expect(json["errors"]).to be_present
         end
       end
     end
@@ -147,16 +158,19 @@ RSpec.describe "GraphQL API", type: :request do
     describe "variables as JSON string" do
       it "parses variables correctly" do
         query = <<~GQL
-          query ListRequests { listRequests { id title } }
+          query ListRequests($filter: RequestFilter!) {
+            listRequests(filter: $filter) { id title }
+          }
         GQL
-        post "/graphql", params: { query: query, variables: '{"foo": "bar"}' }, as: :json
+        variables = { "filter" => { "accountId" => account.id.to_s } }.to_json
+        post "/graphql", params: { query: query, variables: variables }, as: :json
 
         expect(response).to have_http_status(:ok)
       end
 
       it "handles blank variables string" do
         query = <<~GQL
-          query ListRequests { listRequests { id title } }
+          query { __typename }
         GQL
         post "/graphql", params: { query: query, variables: "" }, as: :json
 
@@ -172,12 +186,14 @@ RSpec.describe "GraphQL API", type: :request do
 
       let(:query) do
         <<~GQL
-          query { listRequests { id title status submittedAt decidedAt rejectedReason } }
+          query ListRequests($filter: RequestFilter!) {
+            listRequests(filter: $filter) { id title status submittedAt decidedAt rejectedReason }
+          }
         GQL
       end
 
       it "returns request with datetime fields" do
-        graphql_request(query: query)
+        graphql_request(query: query, variables: { filter: { accountId: account.id.to_s } })
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body.dig("data", "listRequests", 0, "status")).to eq("approved")
       end
