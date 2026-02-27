@@ -2,21 +2,25 @@
 
 API de gerenciamento de solicitações em Ruby on Rails.
 
-## Setup local (sem Docker)
-
-Dentro da pasta do projeto:
+## Setup
 
 ```bash
 bundle install
-bundle exec rake db:create
-bundle exec rake db:migrate
-bundle exec rails db:seed
+rails db:setup
 ```
+
+O `db:setup` cria o banco, carrega o schema e executa as seeds.
 
 Subir a aplicação:
 
 ```bash
 bundle exec rails s -p 3000 -b 0.0.0.0
+```
+
+## Rodar os testes
+
+```bash
+bundle exec rspec
 ```
 
 ## Rodar com Docker
@@ -39,32 +43,43 @@ docker compose exec app bash
 
 ## API GraphQL
 
-A API segue a **Opção A** do desafio: GraphQL com resolvers finos que delegam aos services.
+A API segue a **Opção A** do desafio.
 
 ### Endpoint
 
 - **POST** `/graphql` — corpo: `{ "query": "...", "variables": { ... }, "operationName": "..." }` (opcional)
 
-### Autenticação (simplificada)
+## Decisões técnicas relevantes
 
-Envie o usuário e a conta no header ou como parâmetro (não é necessário JWT):
+### Scopable no GraphQL
 
-- **X-Account-Id** ou `account_id`: ID da conta
-- **X-User-Id** ou `user_id`: ID do usuário (deve pertencer à conta)
+O concern `Queries::Concerns::Scopable` foi adotado para aplicar filtros de forma genérica nas queries,Em vez de repetir lógica de filtro em cada resolver, o Scopable:
 
-Sem esses valores, `listRequests` retorna lista vazia e as mutations falham por falta de context.
+- Recebe o objeto `filter` e o `scope` da relação
+- Itera sobre as chaves do filter (ex.: `account_id`, `status`, `category_id`)
+- Para cada chave, chama o scope correspondente no model (`by_account_id`, `by_status`, `by_category_id`)
+- Mantém a regra de filtro nos scopes do model, e o GraphQL apenas delega
 
-### Query
+Assim, novos filtros exigem apenas: (1) argumento no Filter input, (2) scope no model. O resolver não precisa de código extra.
 
-- **listRequests(status: String, categoryId: ID)** — lista solicitações da conta atual; filtros opcionais.
+### Filtro `active` em Comments
 
-### Mutations
+O campo `comments` em `RequestType` aceita um argumento `filter: CommentFilter` com `active: Boolean`. A definição de "comentário ativo" é: `active: true` = não removido, `active: false`
 
-- **createRequest(title: String!, categoryId: ID!, description: String)**
-- **submitRequest(id: ID!)**
-- **approveRequest(id: ID!)**
-- **rejectRequest(id: ID!, rejectedReason: String!)**
-- **createComment(requestId: ID!, body: String!)**
-- **destroyComment(id: ID!)**
+- `scope :by_active` — recebe `true`/`false`/`nil` e aplica o filtro correspondente
 
-Todas as mutations retornam `{ data: { mutationName: { request|comment, errors: [] } } }`. Em erro, `request`/`comment` vem `null` e `errors` traz as mensagens.
+### Evitar N+1 em listRequests
+
+A query `listRequests` retorna requests com `user`, `category` e `comments`. Para evitar N+1 (uma query por request ao acessar essas associações), o resolver usa `includes` do ActiveRecord:
+
+```ruby
+scope.includes(:user, :category, :comments)
+```
+
+Assim, user, category e comments são carregados em batch na mesma query (ou em poucas queries adicionais), em vez de uma query por request. O DataLoader está habilitado no schema (`use GraphQL::Dataloader`), mas não é usado; o `includes` já resolve o problema para o cenário atual.
+
+## O que faria diferente com mais tempo
+
+- **Autenticação**: JWT ou similar
+- **Graphql** melhorar a estrutura adicionando classe authorization com regras para cada role:
+- **Schema introspection export**: gerar JSON do schema (como `octopus_core_printed_schema.json`) para documentação

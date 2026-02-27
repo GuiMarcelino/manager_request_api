@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # db/seeds.rb
 
 ActiveRecord::Base.transaction do

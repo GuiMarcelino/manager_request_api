@@ -41,11 +41,9 @@ class GraphqlController < ApplicationController
   def prepare_variables(variables_param)
     case variables_param
     when String
-      if variables_param.present?
-        JSON.parse(variables_param) || {}
-      else
-        {}
-      end
+      return {} if variables_param.blank?
+
+      JSON.parse(variables_param) || {}
     when Hash
       variables_param
     when ActionController::Parameters

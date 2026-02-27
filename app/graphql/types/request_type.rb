@@ -25,9 +25,7 @@ module Types
 
     def comments(filter: nil)
       scope = object.comments
-      return scope.active if filter.blank?
-
-      scope.by_active(filter.active)
+      scope.by_active(filter&.active)
     end
   end
 end
