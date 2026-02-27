@@ -66,8 +66,6 @@ Assim, novos filtros exigem apenas: (1) argumento no Filter input, (2) scope no 
 
 O campo `comments` em `RequestType` aceita um argumento `filter: CommentFilter` com `active: Boolean`. A definição de "comentário ativo" é: `active: true` = não removido, `active: false`
 
-- `scope :by_active` — recebe `true`/`false`/`nil` e aplica o filtro correspondente
-
 ### Evitar N+1 em listRequests
 
 A query `listRequests` retorna requests com `user`, `category` e `comments`. Para evitar N+1 (uma query por request ao acessar essas associações), o resolver usa `includes` do ActiveRecord:
